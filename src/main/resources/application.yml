@@ -18,4 +18,4 @@ mapper:
 
 logging:
   level:
-    cn.ehanghai.zsaj: debug
+    org.clxmm.vueshopservice.mapper: debug

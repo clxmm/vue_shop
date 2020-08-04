@@ -11,11 +11,7 @@ import java.util.List;
  * @date 2020-07-30 19:46
  */
 @Data
-
-public class Menu {
-
-
-    private Long id;
+public class Menu extends Domain {
 
 
     private String authName;
