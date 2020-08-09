@@ -21,6 +21,11 @@ public class RolesService {
 
     public List<Roles> getAll() {
 
+        return mapper.getAllRoles();
+    }
+
+
+    public List<Roles> getA() {
         return mapper.selectAll();
     }
 }

@@ -3,6 +3,7 @@ package org.clxmm.vueshopservice.domian;
 import lombok.Data;
 
 import javax.persistence.Table;
+import java.util.List;
 
 /**
  * @author clx
@@ -26,8 +27,7 @@ public class Rights extends Domain {
 
 
 
-
-
+    List<Rights> rightsList;
 
 
 
