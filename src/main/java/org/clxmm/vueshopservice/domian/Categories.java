@@ -2,6 +2,7 @@ package org.clxmm.vueshopservice.domian;
 
 import lombok.Data;
 
+import javax.persistence.Column;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import java.util.List;
@@ -23,8 +24,11 @@ public class Categories extends Domain {
 
     private String name;
 
+    @Column(name = "valid")
+    private Integer valid = 1;
+
 
     @Transient
-    private List<Categories> categoriesList;
+    private List<Categories> children;
 
 }
