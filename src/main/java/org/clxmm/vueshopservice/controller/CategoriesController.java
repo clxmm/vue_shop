@@ -40,6 +40,7 @@ public class CategoriesController {
     @GetMapping("queryPage")
     public ResponseBean querypage(HttpServletRequest request) {
         Map<String, String> parameterMap = ParamUtil.getParameterMap(request);
+        String pageNumber = parameterMap.get("pageNumber");
 
         String type = parameterMap.get("type");
 
@@ -51,10 +52,46 @@ public class CategoriesController {
 
         PageInfo<Categories> pageInfo = categoriesService.queryPaged(parameterMap);
         List<Categories> list = pageInfo.getList();
+        if (StringUtils.isBlank(pageNumber) && "3".equals(type)) {
+            list=categoriesService.getAll();
+
+
+            List<Categories> newList = new ArrayList<>();
+            for (Categories categories : list) {
+                if (1 == categories.getLevel()) {
+                    newList.add(categories);
+                }
+            }
+
+            list = categoriesService.getAll();
+            for (Categories categories : newList) {
+                List<Categories> list2 = new ArrayList<>();
+                for (Categories c1 : list) {
+                    if (categories.getId().intValue() == c1.getPid()) {
+                        list2.add(c1);
+                    }
+                }
+
+                for (Categories categories1 : list2) {
+                    List<Categories> list3 = new ArrayList<>();
+                    for (Categories c1 : list) {
+                        if (c1.getPid().intValue() == categories1.getId()) {
+                            list3.add(c1);
+                        }
+                    }
+                    categories1.setChildren(list3);
+                }
+                categories.setChildren(list2);
+
+            }
+
+            return new ResponseBean(ResponseCode.SUCCESS, newList);
+
+
+        }
+
 
         if ("2".equals(type)) {
-
-
             list = categoriesService.query(parameterMap);
             List<Categories> newList = new ArrayList<>();
             for (Categories categories : list) {
@@ -126,7 +163,7 @@ public class CategoriesController {
      * @return
      */
     @PostMapping("addCate")
-    public ResponseBean addCate(@RequestBody  String s, HttpServletRequest request) {
+    public ResponseBean addCate(@RequestBody String s, HttpServletRequest request) {
         JSONObject object = JSONObject.parseObject(s);
 
         String level = object.getString("cat_level");
