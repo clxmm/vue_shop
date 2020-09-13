@@ -30,11 +30,25 @@ public class AttrsService {
 
     /**
      * 保存
+     *
      * @param attrs
      */
     public void save(Attrs attrs) {
 
         mapper.insertSelective(attrs);
 
+    }
+
+
+    public Attrs getAttrByid(Long id) {
+        return mapper.selectByPrimaryKey(id);
+    }
+
+    public void saveById(Attrs attrs) {
+        mapper.updateByPrimaryKeySelective(attrs);
+    }
+
+    public void deleteById(Long id) {
+        mapper.deleteByPrimaryKey(id);
     }
 }
