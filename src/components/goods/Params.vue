@@ -42,7 +42,26 @@
           <!-- 动态参数表格 -->
           <el-table :data="manyTableData" border stripe>
             <!-- 展开行 -->
-            <el-table-column type="expand"></el-table-column>
+            <el-table-column type="expand">
+              <template slot-scope="scope">
+                <!-- 循环渲染tag 标签 -->
+                <el-tag v-for="(item,i) in scope.row.attrVals" :key="i" :closable="true">{{ item }}</el-tag>
+                <!-- 输入文本框 -->
+                <el-input
+                    class="input-new-tag"
+                    v-if="scope.row.inputVisible"
+                    v-model="scope.row.inputValue"
+                    ref="saveTagInput"
+                    size="small"
+                    @keyup.enter.native="handleInputConfirm(scope.row)"
+                    @blur="handleInputConfirm(scope.row)"
+                >
+                </el-input>
+                <!-- 添加按钮 -->
+                <el-button v-else class="button-new-tag" size="small" @click="showInput(scope.row)">+ New Tag
+                </el-button>
+              </template>
+            </el-table-column>
             <el-table-column type="index"></el-table-column>
             <el-table-column label="参数名称" prop="attrName"></el-table-column>
             <el-table-column label="操作">
@@ -127,7 +146,10 @@
 export default {
   data() {
     return {
-
+      // 文本款的输入内容
+      inputValue: '',
+      // 控制按钮与文本框的切换显示
+      inputVisible: false,
       // 修改表单的验证规则对象
       editFormRules: {
         attrName: [
@@ -175,6 +197,44 @@ export default {
     }
   },
   methods: {
+    // 点击按钮展示文本输入框
+    showInput: function (row) {
+      // console.log(row)
+      row.inputVisible = true;
+
+      // 自动获取焦点
+      // $nextTick 当页面上的元素被重新渲染之后，才会指定回调函数中的代码
+      this.$nextTick(_ => {
+        this.$refs.saveTagInput.$refs.input.focus();
+      });
+    },
+    // 文本框失去焦点 按下enter键
+    handleInputConfirm: async function (row) {
+      console.log(row.inputValue)
+      if (row.inputValue.trim().length === 0) {
+        row.inputValue = '';
+        row.inputVisible = false;
+        return;
+      }
+      // 内容有效。后续保存处理
+      row.attrVals.push(row.inputValue.trim())
+      // console.log(row.attrVals)
+      row.inputValue = '';
+      row.inputVisible = false;
+
+      // 发起请求，保存操作
+
+      const {data: rest} = await this.$http.post("/attrs/save",{
+        id: row.id,
+        attrVals: row.attrVals.join(" ")
+      })
+
+      if (rest.code != 200) {
+        this.$message.error("添加参数项失败！")
+        return
+      }
+      this.$message.success("添加参数项成功")
+    },
     // 根据id 删除参数
     removeParams: async function (id) {
 
@@ -185,10 +245,7 @@ export default {
       }).catch(error => error);
 
       // 取消
-
-      console.log(confirmResult);
-
-
+      // console.log(confirmResult);
 
       if (confirmResult !== 'confirm') {
         this.$message.info("取消删除");
@@ -197,7 +254,7 @@ export default {
 
       // 删除
       const {data: res} = await this.$http.delete("/attrs/deleteById/" + id);
-      if (res.code!=200) {
+      if (res.code != 200) {
         this.$message.error("删除失败");
       }
       this.$message.success("删除成功")
@@ -287,6 +344,19 @@ export default {
         this.$message.error("获取数据失败");
       }
 
+      rest.data.forEach(item => {
+        if (item.attrVals != '' && item.attrVals != null) {
+          item.attrVals = item.attrVals.split(' ');
+        } else {
+          item.attrVals = [];
+        }
+        // 控制文本框的显示与隐藏
+        item.inputVisible = false;
+        item.inputValue = "";
+      })
+
+      // console.log(rest.data);
+
       if (type === 'many') {
         this.manyTableData = rest.data;
       } else {
@@ -350,6 +420,14 @@ export default {
 <style lang="less" scoped>
 .cat_opt {
   margin: 15px 0;
+}
+
+.el-tag {
+  margin: 10px;
+}
+
+.input-new-tag {
+  width: 120px;
 }
 
 </style>
